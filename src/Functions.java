@@ -1,3 +1,5 @@
+import processing.core.PShape;
+
 import static java.lang.Math.*;
 
 public class Functions {
@@ -25,7 +27,7 @@ public class Functions {
         float t = 70;
         context.alpha = (float) ((PI / 2) - (atan2(L, Z) + acos((t * t - f * f - dia * dia) / (-2 * f * dia))));
         context.beta = (float) (-PI + acos((dia * dia - t * t - f * f) / (-2 * f * t)));
-        context.gamma = (float) atan2(Y, X);
+        //context.gamma = (float) atan2(Y, X);
     }
 
     private void setTime() {
@@ -40,5 +42,9 @@ public class Functions {
         setTime();
         context.posX = (float) (sin(gTime * PI / 2) * 20);
         context.posZ = (float) (sin(gTime * PI) * 10);
+    }
+
+    public void updateGamma() {
+        //context.gamma = new PShape().get();
     }
 }

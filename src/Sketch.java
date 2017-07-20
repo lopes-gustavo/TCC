@@ -1,21 +1,25 @@
-import processing.core.PApplet;
-import processing.core.PShape;
+import processing.event.KeyEvent;
 import processing.event.MouseEvent;
 
-public class Sketch extends PApplet {
-    private PShape base, shoulder, upArm, loArm, end, table;
+public class Sketch extends MyPApplet {
+    private Shape base, shoulder, upArm, loArm, end, table;
 
-    private float rotX, rotY;
+    private float rotX = radians(-20);
+    private float rotY = radians(60);
 
-    public float alpha, beta, gamma;
+    public float alpha;
+    public float beta;
+    public int gamma = 1;
     public float posX = 1;
     public float posY = 50;
     public float posZ = 50;
-    public float scale = 4;
+    public double scale = -2.5;
 
     private final float[] xSphere = new float[99];
     private final float[] ySphere = new float[99];
     private final float[] zSphere = new float[99];
+
+    private Shape shoulderShape;
 
     private Functions functions = new Functions(this);
 
@@ -28,9 +32,9 @@ public class Sketch extends PApplet {
         upArm = loadShape("upArm.obj");
         loArm = loadShape("loArm.obj");
         end = loadShape("end.obj");
-        table = loadShape("Part1.obj");
+        table = loadShape("table.obj");
 
-        table.scale(4);
+        //table.scale(10);
 
         shoulder.disableStyle();
         upArm.disableStyle();
@@ -46,12 +50,15 @@ public class Sketch extends PApplet {
 
     @Override
     public void draw() {
-        functions.writePos();
+        //functions.writePos();
+
+        functions.updateGamma();
 
         background(Color.BACKGROUND);
         smooth();
         lights();
         directionalLight(51, 102, 126, -1, 0, 0);
+
 
         for (int i = 0; i < xSphere.length - 1; i++) {
             xSphere[i] = xSphere[i + 1];
@@ -63,12 +70,13 @@ public class Sketch extends PApplet {
         ySphere[ySphere.length - 1] = posY;
         zSphere[zSphere.length - 1] = posZ;
 
+
         noStroke();
 
         translate(width / 2, height / 2);
         rotateX(rotX);
         rotateY(-rotY);
-        scale(-scale);
+        scale(scale);
 
         for (int i = 0; i < xSphere.length; i++) {
             pushMatrix();
@@ -80,18 +88,27 @@ public class Sketch extends PApplet {
 
         displayGrid();
 
-        fill(0xFFFF0000);
-        translate(0, 0, 0);
-        shape(table);
+        Shape tableShape = new ShapeConstructor(table)
+                .position(0,-40,0)
+                .rotateDegrees(0,90,0)
+                .color(Color.RED)
+                .create();
 
-        fill(0xFFFFE308);
-        translate(0, -40, 0);
-        shape(base);
+        Shape baseShape = new ShapeConstructor(base)
+                .position(0,-25,0)
+                .addOwnHeight()
+                .color(Color.YELLOW)
+                .create();
 
-        translate(0, 4, 0);
-        rotateY(gamma);
-        shape(shoulder);
+        shoulderShape = new ShapeConstructor(shoulder)
+                .position(0,4,0)
+                .color(Color.YELLOW)
+                .create();
 
+        shoulder.rotateYDegrees(gamma);
+
+
+/*
         translate(0, 25, 0);
         rotateY(PI);
         rotateX(alpha);
@@ -105,6 +122,9 @@ public class Sketch extends PApplet {
         translate(0, 0, -50);
         rotateY(PI);
         shape(end);
+*/
+
+
 
     }
 
@@ -139,7 +159,6 @@ public class Sketch extends PApplet {
 
     }
 
-
     @Override
     public void mouseDragged() {
         rotY -= (mouseX - pmouseX) * 0.01;
@@ -148,16 +167,16 @@ public class Sketch extends PApplet {
 
     @Override
     public void mouseWheel(MouseEvent event) {
-        scale -= event.getCount();
+        scale -= 0.1*event.getCount();
     }
 
     @Override
-    public PShape loadShape(String filename) {
-        PShape pShape = super.loadShape(filename);
-
-        println(filename + ".getWidth", pShape.getWidth());
-        println(filename + ".getHeight", pShape.getHeight());
-
-        return pShape;
+    public void keyPressed(KeyEvent event) {
+        if(event.getKey() == 'p') {
+            gamma = 0;
+            println(shoulderShape.getAngle());
+        } else if (event.getKey() == 'o') {
+            gamma = 1;
+        }
     }
 }

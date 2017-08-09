@@ -1,33 +1,53 @@
-import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PShape;
 
-public class Shape extends PShape{
-    private float angle = 0;
-    private PShape shape;
+import java.util.Arrays;
 
-    Shape(PShape shape) {
-        this.shape = shape;
+public class Shape extends PShape {
+    protected Applet context;
+
+    public Shape() {
+        super();
+    }
+
+    public Shape(Applet context, PGraphics g, int kind, float[] p) {
+        super(g, kind, p);
+        this.context = context;
+    }
+
+    public void addChild(String name, PShape shape) {
+        shape.setName(name);
+        addChild(shape);
+    }
+
+    @Override
+    public void setName(String name) {
+        super.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public float[] getAbsoluteParams() {
+        float[] out = this.getParams();
+        out[0] += context.getX();
+        out[1] += context.getY();
+
+        return out;
+    }
+
+    @Override
+    public Shape[] getChildren() {
+        // TODO: Analyze to see if (children.length-1) will work
+        return Arrays.copyOf(children, children.length-1, Shape[].class);
+    }
+
+    @Override
+    public Shape getChild(String target) {
+        return (Shape) super.getChild(target);
     }
 
 
-    public void rotateY(float angle) {
-        shape.rotateY(angle);
-
-        this.angle += angle;
-        if (this.angle >= PI) {
-            this.angle = -PI;
-        }
-    }
-
-    public void rotateYDegrees(int angle) {
-        rotateY(PApplet.radians(angle));
-    }
-
-    public PShape getShape() {
-        return shape;
-    }
-
-    public float getAngle() {
-        return PApplet.degrees(angle);
-    }
 }

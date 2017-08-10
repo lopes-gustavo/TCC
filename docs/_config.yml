@@ -1,2 +1,5 @@
 theme: jekyll-theme-cayman
-title: Trabalho de Conclusão de Curso
+defaults:
+  -
+    title: Trabalho de Conclusão de Curso
+    

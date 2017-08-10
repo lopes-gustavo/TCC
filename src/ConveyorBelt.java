@@ -1,17 +1,17 @@
 import processing.core.PConstants;
 
+import java.util.ArrayList;
+
 public class ConveyorBelt extends Shape {
 
     private static final int size = 500;
     private static final int footHeight = 100;
 
-    private float[] sensorPositions;
-    private boolean[] sensorsActive;
+    private ArrayList<Sensor> sensors = new ArrayList<>();
 
     private MovingObject object;
     private int canMove = 1;
-
-
+    private boolean dropSelected = false;
 
     public ConveyorBelt (String name, Applet context) {
         super.context = context;
@@ -22,6 +22,7 @@ public class ConveyorBelt extends Shape {
         addMast();
         addDropDown();
         addSensors(0.25, 0.5, 0.7);
+        addDropDownSensor();
         addMovingObject();
         reposition();
     }
@@ -54,17 +55,17 @@ public class ConveyorBelt extends Shape {
     }
 
     private void addSensors(double... sensorPositions) {
-        this.sensorPositions = new float[sensorPositions.length];
-        this.sensorsActive = new boolean[sensorPositions.length];
-
-        for (int i = 0; i < sensorPositions.length; i++) {
-            this.sensorPositions[i] = (float) sensorPositions[i] * size;
-            this.sensorsActive[i] = false;
-
-            Shape sensor = context.createShape(PConstants.ELLIPSE, this.sensorPositions[i], 0, 5, 5);
-            sensor.setStroke(Color.RED);
-            addChild("sensor " + i, sensor);
+        for (double sensorPosition : sensorPositions) {
+            Sensor sensor = new Sensor(context.createShape(PConstants.ELLIPSE, (float) sensorPosition * size, 0, 5, 5), Sensor.VERTICAL);
+            this.sensors.add(sensor);
+            addChild("sensor " + String.valueOf(sensorPosition), sensor);
         }
+    }
+
+    private void addDropDownSensor() {
+        Sensor sensor = new Sensor(context.createShape(PConstants.ELLIPSE, size/2, -70, 5, 5), Sensor.HORIZONTAL);
+        this.sensors.add(sensor);
+        addChild("sensor " + size/2, sensor);
     }
 
     private void addDropDown() {
@@ -95,14 +96,23 @@ public class ConveyorBelt extends Shape {
 
     public void turnSensorsOn() {
         new Thread(() -> {
-            for (int i = 0; i < sensorPositions.length; i++) {
-                Shape sensor = getChild("sensor " + i);
+            for (Sensor sensor : sensors) {
 
-                if ((sensorPositions[i] - object.getPosX()) > 0 && (sensorPositions[i] - object.getPosX()) < object.getSizeX()) {
-                    sensorsActive[i] = true;
+                boolean isActive = false;
+                switch (sensor.getType()) {
+                    case Sensor.HORIZONTAL:
+                        isActive = dropSelected;
+                        break;
+                    case Sensor.VERTICAL: //TODO
+                        isActive = (sensor.getPosition() - object.getPosX()) > 0 && (sensor.getPosition() - object.getPosX()) < object.getSizeX();
+                        break;
+                }
+
+                if (isActive) {
+                    sensor.setActive(true);
                     sensor.setStroke(Color.YELLOW);
                 } else {
-                    sensorsActive[i] = false;
+                    sensor.setActive(false);
                     sensor.setStroke(Color.RED);
                 }
             }
@@ -110,26 +120,70 @@ public class ConveyorBelt extends Shape {
     }
 
     public void displaySensorsTable() {
-        for (int i = 0; i < sensorsActive.length; i ++) {
+        for (int i = 0; i < sensors.size(); i ++) {
             context.writeInPage("S" + i, 30 + 40*i, 10);
-            context.writeInPage(sensorsActive[i] ? 1 : 0, 30 + 40*i, 40);
+            context.writeInPage(sensors.get(i).isActive() ? 1 : 0, 30 + 40*i, 40);
         }
     }
 
     public void displayControllers() {
         int spacing = 60;
-        Button forward = new Button(context, 200 + spacing*0, context.height - 70, 40, 40, () -> object.setDirection(MovingObject.Direction.POSITIVE));
-        Button backward = new Button(context, 200 + spacing*1, context.height - 70, 40, 40, () -> object.setDirection(MovingObject.Direction.NEGATIVE));
-        Button stop = new Button(context, 200 + spacing*2, context.height - 70, 40, 40, () -> object.setDirection(MovingObject.Direction.STOP));
+        Button forw = new Button(context, 200 + spacing*0, context.height - 70, 40, 40, button -> object.setDirection(MovingObject.Direction.POSITIVE));
+        Button back = new Button(context, 200 + spacing*1, context.height - 70, 40, 40, button -> object.setDirection(MovingObject.Direction.NEGATIVE));
+        Button stop = new Button(context, 200 + spacing*2, context.height - 70, 40, 40, button -> object.setDirection(MovingObject.Direction.STOP));
+        Button drop = new Button(context, 200 + spacing*3, context.height - 70, 40, 40, button -> dropSelected = button.isSelected());
 
-        forward.setText(">>");
-        backward.setText("<<");
+        forw.setText(">>");
+        back.setText("<<");
         stop.setText("||");
+        drop.setText("\\/");
 
-        context.addButton(forward);
-        context.addButton(backward);
+        context.addButton(forw);
+        context.addButton(back);
         context.addButton(stop);
+        context.addButton(drop);
 
     }
 
+    public String getSensorsActive() {
+        StringBuilder out = new StringBuilder();
+        for (Sensor sensor : sensors) {
+            out.append(sensor.isActive() ? 1 : 0);
+        }
+        return out.toString();
+    }
+
+    private static class Sensor extends Shape{
+        public static final int VERTICAL = 0;
+        public static final int HORIZONTAL = 1;
+
+        private float position;
+        private boolean active;
+        private int type;
+
+        Sensor(Shape shape, int type) {
+            super(shape.context, shape.context.g, shape.getKind(), shape.getParams());
+            this.position = shape.getParam(type);
+            this.active = false;
+            this.type = type;
+
+            setStroke(Color.RED);
+        }
+
+        public boolean isActive() {
+            return active;
+        }
+
+        public void setActive(boolean active) {
+            this.active = active;
+        }
+
+        public float getPosition() {
+            return position;
+        }
+
+        public int getType() {
+            return type;
+        }
+    }
 }

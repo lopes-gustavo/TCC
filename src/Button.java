@@ -5,6 +5,7 @@ public class Button {
     private final Applet context;
     private OnClickListener listener;
     private String text = null;
+    private boolean isSelected = false;
 
     Button(Applet context, int xx, int yy, int ww, int hh, OnClickListener listener) {
         this.context = context;
@@ -29,7 +30,7 @@ public class Button {
     }
 
     public void callListener() {
-        listener.onClickListener();
+        listener.onClickListener(this);
     }
 
     public void setText(String text) {
@@ -40,7 +41,22 @@ public class Button {
         return context.mouseX > x & context.mouseX < x + w & context.mouseY > y & context.mouseY < y + h;
     }
 
+    public void toggle() {
+        isSelected = !isSelected;
+    }
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void listenForMouse() {
+        if (isMouseInside()) {
+            toggle();
+            callListener();
+        }
+    }
+
     public interface OnClickListener {
-        void onClickListener();
+        void onClickListener(Button button);
     }
 }

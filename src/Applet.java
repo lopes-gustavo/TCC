@@ -93,10 +93,8 @@ public class Applet extends PApplet {
 
     @Override
     public void mousePressed() {
-        for (Button b : buttons) {
-            if (b.isMouseInside()) {
-                b.callListener();
-            }
+        for (Button button : buttons) {
+            button.listenForMouse();
         }
     }
 

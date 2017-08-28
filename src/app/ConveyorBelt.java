@@ -186,9 +186,14 @@ public class ConveyorBelt extends Shape {
      * Mostra os valores dos sensores na tela
      */
     public void displaySensorsTable() {
-        for (int i = 0; i < sensors.size(); i ++) {
-            context.writeInPage("S" + i, 30 + 40*i, 10);
-            context.writeInPage(sensors.get(i).isActive() ? 1 : 0, 30 + 40*i, 40);
+        if (Applet.DEBUG) {
+            context.insideMatrix(() -> {
+                context.center();
+                for (int i = 0; i < sensors.size(); i++) {
+                    context.writeInPage("S" + i, 30 + 40 * i, 10);
+                    context.writeInPage(sensors.get(i).isActive() ? 1 : 0, 30 + 40 * i, 40);
+                }
+            });
         }
     }
 
@@ -259,7 +264,7 @@ public class ConveyorBelt extends Shape {
 
             // Simula a gravidade
             speed += 10 * t;
-            t += 1 / 30f;
+            t += 1 / 30f * Main.SPEED_CORRECTION_FACTOR;
 
             drop.translate(0, speed);
 
@@ -292,7 +297,6 @@ public class ConveyorBelt extends Shape {
         display();
         turnSensorsOn();
         moveObject(((Main) context).getSpeed());
-        displaySensorsTable();
         moveDrop();
     }
 

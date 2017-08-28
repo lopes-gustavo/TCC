@@ -8,6 +8,8 @@ public class Applet extends PApplet {
     private int x;
     private int y;
 
+    public static boolean DEBUG = false;
+
     protected ArrayList<Button> buttons = new ArrayList<>();
 
     /**
@@ -83,17 +85,6 @@ public class Applet extends PApplet {
     }
 
     /**
-     * Mostra o quadro preto no final da tela para debugging
-     */
-    public void showBlackDebugBox() {
-        pushMatrix();
-        noStroke();
-        fill(Color.BLACK);
-        rect(0, height, width, -100);
-        popMatrix();
-    }
-
-    /**
      * <pre>
      * Centraliza o Applet na tela
      * Posição (0, 0) agora é no centro da tela
@@ -135,8 +126,13 @@ public class Applet extends PApplet {
      * Mostra os botões na tela
      */
     public void displayButtons() {
-        for (Button b : buttons) {
-            b.display();
+        if (DEBUG) {
+            insideMatrix(() -> {
+                center();
+                for (Button b : buttons) {
+                    b.display();
+                }
+            });
         }
     }
 

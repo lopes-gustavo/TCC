@@ -10,8 +10,7 @@ import java.util.Collections;
 
 public class Test extends PApplet {
     private Serial myPort;
-    private Timer timer;
-    private int baud = 20;
+    private int baud = 100; // Receber dados quantas vezes por segundo
     private int digitalOutput = Config.getDigitalOutput();
     private ArrayList<Boolean> digitalList = new ArrayList<>(Collections.nCopies(digitalOutput, false));
     private int balls = 0;
@@ -57,10 +56,6 @@ public class Test extends PApplet {
         try {
             String sensorDrop = buffer.substring(4);
 
-            println("isOn: " + isOn);
-            println("sensorDrop: " + sensorDrop);
-            println("balls: " + balls);
-
             if (sensorDrop.equals("1") && !isOn) {
                 balls++;
                 isOn = true;
@@ -101,8 +96,6 @@ public class Test extends PApplet {
             if (digitalList.get(2)) {
                 answer("D0010A0000");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception ignored) {}
     }
 }

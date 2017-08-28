@@ -1,6 +1,7 @@
 package app;
 
 import processing.core.PApplet;
+import processing.opengl.PJOGL;
 import processing.serial.Serial;
 import tests.Test;
 
@@ -15,15 +16,20 @@ public class Main extends Applet {
     private static String SERIAL_PORT = "COM1";
     private static int SERIAL_BAUD = 9600;
 
+    public static float FRAME_RATE = 100;
+    public static float SPEED_CORRECTION_FACTOR = 30 / FRAME_RATE;
+
     private ConveyorBelt conveyorBelt;
-    private double speed = 1;
+    private double speed = 1 * SPEED_CORRECTION_FACTOR;
     private Serial myPort;
     private Timer timer;
-    private int baud = 20;
+    private int baud = 60;
     private int digitalInput = Config.getDigitalInput();
     private int analogInput = Config.getAnalogInput();
     protected final ArrayList<Boolean> digitalList = new ArrayList<>(Collections.nCopies(digitalInput, false));
     protected final ArrayList<Integer> analogList = new ArrayList<>(Collections.nCopies(analogInput, 0));
+
+    float rotX, rotY;
 
     public static void main(String... args) {
         PApplet.main("app.Main");
@@ -31,7 +37,9 @@ public class Main extends Applet {
 
     @Override
     public void settings() {
-        size(1200, 800);
+        PJOGL.setIcon("assets/icon.png");
+
+        size(1200, 800, P3D);
     }
 
     @Override
@@ -41,9 +49,8 @@ public class Main extends Applet {
         surface.setResizable(true);
         surface.setLocation(2000, 0);
         surface.setTitle("Trabalho de TCC");
-        surface.setIcon(loadImage("icon.png"));
 
-        frameRate(30);
+        frameRate(FRAME_RATE);
 
         myPort = new Serial(this, SERIAL_PORT, SERIAL_BAUD);
 
@@ -58,14 +65,16 @@ public class Main extends Applet {
     public void draw() {
         super.draw();
 
-
         background(Color.BACKGROUND);
         smooth();
-        showGrid();
-        showBlackDebugBox();
+
+        debug(true);
+
+        rotateX(rotX);
+        rotateY(-rotY);
+
         center();
 
-        displayButtons();
 
         conveyorBelt.init();
     }
@@ -175,11 +184,40 @@ public class Main extends Applet {
     }
 
     private void updateAnalogControllers() {
-        speed = analogList.get(0)/9999f;
+        setSpeed(analogList.get(0)/9999f);
+    }
+
+    public void setSpeed(double speed) {
+        this.speed = speed * SPEED_CORRECTION_FACTOR;
     }
 
     public double getSpeed() {
         return speed;
+    }
+
+    /**
+     * Mostra o quadro preto no final da tela para debugging
+     */
+    public void debug(boolean debug) {
+        if (debug) {
+            DEBUG = true;
+
+            insideMatrix(() -> {
+                noStroke();
+                fill(Color.BLACK);
+                rect(0, height, width, -100);
+
+                showGrid();
+                displayButtons();
+                conveyorBelt.displaySensorsTable();
+            });
+
+        }
+    }
+
+    public void mouseDragged(){
+        rotY -= (mouseX - pmouseX) * 0.01;
+        rotX -= (mouseY - pmouseY) * 0.01;
     }
 }
 

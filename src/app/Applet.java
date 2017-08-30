@@ -30,6 +30,7 @@ public class Applet extends PApplet {
 
         this.x += x;
         this.y += y;
+
     }
 
     /**

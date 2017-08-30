@@ -10,12 +10,14 @@ public class ConveyorBelt extends Shape {
     private static final int size = 500;
     private static final int footHeight = 100;
 
-    float[] dropDownParams = getDropDownParams();
+    private float[] dropDownParams = getDropDownParams();
+    private float dropSpeed = 0;
+    private float dropT = 0;
+    private Timer dropTimer;
 
     private ArrayList<Sensor> sensors = new ArrayList<>();
 
     private MovingObject object;
-    private boolean dropSelected = false;
 
     /**
      * Construtor
@@ -26,16 +28,13 @@ public class ConveyorBelt extends Shape {
         super.context = context;
         setName(name);
 
-        addBase();
-        addFeet(0.1, 0.9);
-        addMast();
-        addDropDown();
+        new Structure();
         addBaseSensors(0.25, 0.5, 0.9);
-        addDropDownSensor();
+        new DropDown();
+
         addMovingObject();
         reposition();
 
-        //createDrop();
         drop();
     }
 
@@ -47,68 +46,19 @@ public class ConveyorBelt extends Shape {
     }
 
     /**
-     * Adiciona a base da esteira
-     */
-    private void addBase() {
-        Shape base = context.createShape(PConstants.LINE, 0, 0, size, 0);
-        base.setStroke(Color.WHITE);
-        addChild("base", base);
-    }
-
-    /**
-     * TODO: Adicionar validação para valores menores que 1
-     * Adiciona os pés da esteira
-     * @param feetPosition As posições dos pés, em porcentagem
-     */
-    private void addFeet(double... feetPosition) {
-        for (double footPosition : feetPosition) {
-            float position = (float) footPosition * size;
-            Shape feet = context.createShape(PConstants.LINE, position, footHeight, position, 0);
-            feet.setStroke(Color.WHITE);
-            addChild("feet " + footPosition, feet);
-        }
-    }
-
-    /**
-     * Adiciona o poste que contém o dropDown
-     */
-    private void addMast() {
-        float mastPosition = 0.5f * size;
-        float mastHeight = 200;
-        Shape mast = context.createShape(PConstants.LINE, mastPosition, footHeight, mastPosition, -mastHeight);
-        mast.setStroke(Color.WHITE);
-        addChild("mast", mast);
-    }
-
-    /**
      * TODO: Fazer verificação para que os valores sejam menores que 1
      * Adiciona os sensores da base
      * @param sensorPositions A posição dos sensores, em porcentagem
      */
     private void addBaseSensors(double... sensorPositions) {
         for (double sensorPosition : sensorPositions) {
-            Sensor sensor = new Sensor(context.createShape(PConstants.ELLIPSE, (float) sensorPosition * size, 0, 5, 5), Sensor.VERTICAL);
+            Sensor sensor = Sensor.createShape(context, (float) sensorPosition * size, 0, Sensor.VERTICAL);
+
             this.sensors.add(sensor);
             addChild("sensor " + String.valueOf(sensorPosition), sensor);
         }
     }
 
-    /**
-     * Adiciona o sensor do dropdown
-     */
-    private void addDropDownSensor() {
-        Sensor sensor = new Sensor(context.createShape(PConstants.ELLIPSE, size/2, -70, 5, 5), Sensor.HORIZONTAL);
-        this.sensors.add(sensor);
-        addChild("sensor " + size/2, sensor);
-    }
-
-    /**
-     * Adiciona o dropdown
-     */
-    private void addDropDown() {
-        Shape dropDown = context.createShape(PConstants.RECT, dropDownParams);
-        addChild("dropDown", dropDown);
-    }
 
     /**
      * Método helper para salvar e manter "genérico" os parâmetros do dropdown
@@ -236,16 +186,14 @@ public class ConveyorBelt extends Shape {
     /**
      * Cria a bola que cai do dropdown
      */
-    float speed = 0;
-    float t = 0;
     private void createDrop() {
         float width = dropDownParams[2] / 2;
         float x = dropDownParams[0] + width;
 
         Shape drop = context.createShape(PConstants.ELLIPSE, x, dropDownParams[1], width, width);
 
-        speed = 0;
-        t = 0;
+        dropSpeed = 0;
+        dropT = 0;
         addChild("drop", drop, true);
 
         reorderChildren(drop, getChild("dropDown"));
@@ -258,15 +206,15 @@ public class ConveyorBelt extends Shape {
         try {
             Shape drop = getChild("drop");
 
-            if (drop.getY() + drop.getHeight() + speed > 0) {
+            if (drop.getY() + drop.getHeight() + dropSpeed > 0) {
                 removeChild(drop.getName());
             }
 
             // Simula a gravidade
-            speed += 10 * t;
-            t += 1 / 30f * Main.SPEED_CORRECTION_FACTOR;
+            dropSpeed += 10 * dropT;
+            dropT += 1 / 30f * Main.SPEED_CORRECTION_FACTOR;
 
-            drop.translate(0, speed);
+            drop.translate(0, dropSpeed);
 
 
         } catch (Exception ignored) {}
@@ -275,17 +223,16 @@ public class ConveyorBelt extends Shape {
     /**
      * Faz a bola cair em intervalos constantes.
      */
-    Timer timer;
     boolean isDrop = false;
     public void drop() {
         new Thread(() -> {
-            timer = new Timer(1000, actionEvent -> {
+            dropTimer = new Timer(1000, actionEvent -> {
                 if (context.buttons.get(3).isActive()) {
                     createDrop();
                     moveDrop();
                 }
             });
-            timer.start();
+            dropTimer.start();
         }).start();
 
     }
@@ -313,10 +260,13 @@ public class ConveyorBelt extends Shape {
         private boolean active;
         private int type;
 
-        Sensor(Shape shape, int type) {
+        private Sensor(Shape shape, float x, float y, int type) {
             super(shape.context, shape.context.g, shape.getKind(), shape.getParams());
-            this.horizontalPosition = shape.getParam(0);
-            this.verticalPosition = shape.getParam(1);
+
+            this.translate(x, y);
+
+            this.horizontalPosition = x;
+            this.verticalPosition = y;
             this.active = false;
             this.type = type;
 
@@ -342,5 +292,80 @@ public class ConveyorBelt extends Shape {
         public int getType() {
             return type;
         }
+
+        public static Sensor createShape(Applet context, float x, float y, int type) {
+            float sensorSize = 3;
+            return new Sensor(context.createShape(PConstants.SPHERE, sensorSize, sensorSize, sensorSize), x, y, type);
+        }
+    }
+
+    private class Structure {
+        Structure() {
+            addBase();
+            addFeet(0.1, 0.9);
+            addMast();
+        }
+
+        /**
+         * Adiciona a base da esteira
+         */
+        private void addBase() {
+            Shape base = context.createShape(PConstants.BOX, size, 10, 100);
+            base.translate(size / 2, 10 / 2);
+            base.setStroke(Color.WHITE);
+            addChild("base", base);
+        }
+
+        /**
+         * TODO: Adicionar validação para valores menores que 1
+         * Adiciona os pés da esteira
+         * @param feetPosition As posições dos pés, em porcentagem
+         */
+        private void addFeet(double... feetPosition) {
+            for (double footPosition : feetPosition) {
+                float position = (float) footPosition * size;
+                Shape feet = context.createShape(PConstants.LINE, position, footHeight, position, 0);
+                feet.setStroke(Color.WHITE);
+                addChild("feet " + footPosition, feet);
+            }
+        }
+
+        /**
+         * Adiciona o poste que contém o dropDown
+         */
+        private void addMast() {
+            float mastPosition = 0.5f * size;
+            float mastHeight = 200;
+            Shape mast = context.createShape(PConstants.LINE, mastPosition, footHeight, mastPosition, -mastHeight);
+            mast.setStroke(Color.WHITE);
+            addChild("mast", mast);
+        }
+
+    }
+
+    private class DropDown {
+        DropDown() {
+            addDropDown();
+            addDropDownSensor();
+        }
+
+        /**
+         * Adiciona o sensor do dropdown
+         */
+        private void addDropDownSensor() {
+            Sensor sensor = Sensor.createShape(context, size/2, -70, Sensor.HORIZONTAL);
+
+            sensors.add(sensor);
+            addChild("sensor " + size/2, sensor);
+        }
+
+        /**
+         * Adiciona o dropdown
+         */
+        private void addDropDown() {
+            Shape dropDown = context.createShape(PConstants.RECT, dropDownParams);
+            addChild("dropDown", dropDown);
+        }
+
     }
 }

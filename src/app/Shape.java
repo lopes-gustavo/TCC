@@ -18,10 +18,14 @@ public class Shape extends PShape {
     public Shape(Applet context, PGraphics g, int kind, float[] p) {
         super(g, kind, p);
         this.context = context;
-        x = p[0];
-        y = p[1];
 
-        height = p[3];
+        if(p.length <= 3) {
+            height = p[1];
+        } else {
+            x = p[0];
+            y = p[1];
+            height = p[3];
+        }
     }
 
     public void addChild(String name, PShape shape) {

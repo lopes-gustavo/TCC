@@ -1,6 +1,8 @@
 package app;
 
 import processing.core.PApplet;
+import processing.core.PConstants;
+import processing.event.MouseEvent;
 import processing.opengl.PJOGL;
 import processing.serial.Serial;
 import tests.Test;
@@ -29,7 +31,9 @@ public class Main extends Applet {
     protected final ArrayList<Boolean> digitalList = new ArrayList<>(Collections.nCopies(digitalInput, false));
     protected final ArrayList<Integer> analogList = new ArrayList<>(Collections.nCopies(analogInput, 0));
 
-    float rotX, rotY;
+    private float rotX, rotY;
+    private float zoom = 1;
+    private float transX, transY;
 
     public static void main(String... args) {
         PApplet.main("app.Main");
@@ -67,16 +71,22 @@ public class Main extends Applet {
 
         background(Color.BACKGROUND);
         smooth();
+        lights();
 
         debug(true);
 
-        rotateX(rotX);
-        rotateY(-rotY);
+        applyMouseMovements();
 
         center();
 
-
         conveyorBelt.init();
+    }
+
+    private void applyMouseMovements() {
+        rotateX(rotX);
+        rotateY(-rotY);
+        translate(transX, transY);
+        scale(zoom);
     }
 
     @Override
@@ -215,9 +225,41 @@ public class Main extends Applet {
         }
     }
 
+
+    /**
+     * Altera a posição da câmera ao clicar + arrastar o mouse
+     */
+    @Override
     public void mouseDragged(){
         rotY -= (mouseX - pmouseX) * 0.01;
         rotX -= (mouseY - pmouseY) * 0.01;
+    }
+
+    /**
+     * Aplica zoom ao rolar o botão do meio do mouse
+     */
+    @Override
+    public void mouseWheel(MouseEvent event) {
+        zoom += event.getCount() / 50f;
+        transX -= event.getCount() * mouseX / 50f;
+        transY -= event.getCount() * mouseY / 50f;
+    }
+
+    /**
+     * Retorna para a posição original ao clicar com o botão do meio do mouse
+     */
+    @Override
+    public void mouseClicked(MouseEvent event) {
+        if (event.getButton() == PConstants.CENTER) {
+            translate(-transX, -transY);
+            transX = 0;
+            transY = 0;
+
+            rotX = 0;
+            rotY = 0;
+
+            zoom = 1;
+        }
     }
 }
 

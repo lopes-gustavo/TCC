@@ -15,11 +15,11 @@ import java.util.Collections;
 //TODO: Use app.Config properly (make it more generic)
 
 public class Main extends Applet {
-    private static String SERIAL_PORT = "COM1";
-    private static int SERIAL_BAUD = 9600;
+    private static final String SERIAL_PORT = "COM10";
+    private static final int SERIAL_BAUD = 9600;
 
-    public static float FRAME_RATE = 100;
-    public static float SPEED_CORRECTION_FACTOR = 30 / FRAME_RATE;
+    public static final float FRAME_RATE = 100;
+    public static final float SPEED_CORRECTION_FACTOR = 30 / FRAME_RATE;
 
     private ConveyorBelt conveyorBelt;
     private double speed = 1 * SPEED_CORRECTION_FACTOR;
@@ -62,7 +62,7 @@ public class Main extends Applet {
         startThreadReceiveData();
 
         conveyorBelt = new ConveyorBelt("conveyor belt", this);
-        conveyorBelt.displayControllers();
+        conveyorBelt.init();
     }
 
     @Override
@@ -73,33 +73,33 @@ public class Main extends Applet {
         smooth();
         lights();
 
-        debug(true);
-
-        applyMouseMovements();
+        debug(false);
 
         center();
+        applyMouseMovements();
 
-        conveyorBelt.init();
+        conveyorBelt.run();
     }
 
     private void applyMouseMovements() {
-        rotateX(rotX);
-        rotateY(-rotY);
         translate(transX, transY);
         scale(zoom);
-    }
-
-    @Override
-    public void mousePressed() {
-        super.mousePressed();
+        rotateX(rotX);
+        rotateY(-rotY);
     }
 
     private void startThreadSendData() {
         new Thread(() -> {
             timer = new Timer(1000 / baud, actionEvent -> {
-                myPort.write('D');
-                myPort.write(conveyorBelt.getSensorsActive());
-                myPort.write("\r\n");
+                try {
+                    myPort.write('D');
+                    myPort.write(conveyorBelt.getActiveSensors());
+                    myPort.write("\r\n");
+                } catch (Exception e) {
+                    System.err.println("Erro");
+                    e.printStackTrace();
+                    System.exit(1);
+                }
             });
             timer.start();
         }).start();
@@ -227,12 +227,28 @@ public class Main extends Applet {
 
 
     /**
+     * Usado para os cliques nos botões
+     */
+    @Override
+    public void mousePressed() {
+        super.mousePressed();
+    }
+
+    /**
      * Altera a posição da câmera ao clicar + arrastar o mouse
      */
     @Override
-    public void mouseDragged(){
-        rotY -= (mouseX - pmouseX) * 0.01;
-        rotX -= (mouseY - pmouseY) * 0.01;
+    public void mouseDragged(MouseEvent event){
+        switch (event.getButton()) {
+            case CENTER:
+                rotY -= (mouseX - pmouseX) * 0.01;
+                rotX -= (mouseY - pmouseY) * 0.01;
+                break;
+            case PConstants.LEFT:
+                transY += (mouseY - pmouseY);
+                transX += (mouseX - pmouseX);
+                break;
+        }
     }
 
     /**
@@ -240,9 +256,7 @@ public class Main extends Applet {
      */
     @Override
     public void mouseWheel(MouseEvent event) {
-        zoom += event.getCount() / 50f;
-        transX -= event.getCount() * mouseX / 50f;
-        transY -= event.getCount() * mouseY / 50f;
+        zoom -= event.getCount() * 0.05;
     }
 
     /**

@@ -1,9 +1,9 @@
 package app;
 
 import processing.core.PApplet;
-import processing.core.PShape;
+import processing.core.PConstants;
 
-public class MovingObject extends PShape {
+public class Recipient extends Shape {
     private PApplet context;
 
     private final float maxX;
@@ -15,7 +15,7 @@ public class MovingObject extends PShape {
     private int sizeY = 30;
     private int direction = 1;
 
-    public MovingObject(String name, PApplet context, float beltWidth) {
+    public Recipient(String name, PApplet context, float beltWidth) {
         this.context = context;
         this.beltWidth = beltWidth;
         this.minX = -beltWidth/2;
@@ -26,9 +26,11 @@ public class MovingObject extends PShape {
     }
 
     private void create() {
-        PShape obj = context.createShape(RECT, minX, -sizeY, sizeX, sizeY);
-        obj.setFill(Color.RED);
-        addChild(obj);
+        Shape box = ((Applet) context).createShape(PConstants.BOX, sizeX, sizeY, 50);
+        box.translate(minX + sizeX/2, -sizeY/2);
+        box.setFill(Color.RED, 0.5);
+
+        addChild("moving_object", box);
 
         posX = (int) minX;
     }

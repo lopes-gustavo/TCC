@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class Test extends PApplet {
+    private static String SERIAL_PORT = "COM4";
     private Serial myPort;
     private int baud = 100; // Receber dados quantas vezes por segundo
     private int digitalOutput = Config.getDigitalOutput();
@@ -22,7 +23,7 @@ public class Test extends PApplet {
     @Override
     public void setup() {
         try {
-            myPort = new Serial(this, "COM2", 9600);
+            myPort = new Serial(this, SERIAL_PORT, 9600);
         } catch (RuntimeException e) {
             System.err.println("A porta está correta?");
             System.exit(1);

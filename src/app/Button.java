@@ -5,7 +5,8 @@ import static processing.core.PConstants.CENTER;
 public class Button {
     private final int x, y, w, h;
     private final Applet context;
-    private OnClickListener listener;
+    private OnClickListener clickListener;
+    private OnStateChange onStateChangeListener;
     private String text = null;
     private boolean active = false;
 
@@ -16,15 +17,15 @@ public class Button {
      * @param yy Posição 'y' do botão
      * @param ww Tamanho horizontal do botão
      * @param hh Tamanho vertical do botão
-     * @param listener Callback chamado quando se clica no botão
+     * @param clickListener Callback chamado quando se clica no botão
      */
-    Button(Applet context, int xx, int yy, int ww, int hh, OnClickListener listener) {
+    Button(Applet context, int xx, int yy, int ww, int hh, OnClickListener clickListener) {
         this.context = context;
         this.x = xx;
         this.y = yy;
         this.w = ww;
         this.h = hh;
-        this.listener = listener;
+        this.clickListener = clickListener;
     }
 
     /**
@@ -51,7 +52,11 @@ public class Button {
      * Função para invocar o callback quando o botão é clicado
      */
     private void callListener() {
-        listener.onClickListener(this);
+        clickListener.onClickListener(this);
+    }
+
+    public void onStateChange(OnStateChange listener) {
+        onStateChangeListener = listener;
     }
 
     /**
@@ -95,6 +100,12 @@ public class Button {
         if(this.active = active) {
             callListener();
         }
+
+        // Chama o callback
+        if (onStateChangeListener != null) {
+            onStateChangeListener.onStateChange(active);
+        }
+
     }
 
     /**
@@ -109,5 +120,9 @@ public class Button {
      */
     public interface OnClickListener {
         void onClickListener(Button button);
+    }
+
+    public interface OnStateChange {
+        void onStateChange(boolean state);
     }
 }

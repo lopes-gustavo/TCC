@@ -69,6 +69,11 @@ public class Shape extends PShape {
         return name;
     }
 
+    public void setFill(int color, double transparency) {
+        color &= ((int) (transparency * 0x100) * 0x1000000) | 0xFFFFFF;
+        super.setFill(color);
+    }
+
     public float[] getAbsoluteParams() {
         float[] out = this.getParams();
         out[0] += context.getX();

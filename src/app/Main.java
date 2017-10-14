@@ -5,20 +5,20 @@ import processing.core.PConstants;
 import processing.event.MouseEvent;
 import processing.opengl.PJOGL;
 import processing.serial.Serial;
-import tests.Test;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 
 
 //TODO: Use app.Config properly (make it more generic)
 
 public class Main extends Applet {
-    private static final String SERIAL_PORT = "COM10";
+    private static final String SERIAL_PORT = "COM13";
     private static final int SERIAL_BAUD = 9600;
 
-    public static final float FRAME_RATE = 100;
+    public static final float FRAME_RATE = 50;
     public static final float SPEED_CORRECTION_FACTOR = 30 / FRAME_RATE;
 
     private ConveyorBelt conveyorBelt;
@@ -48,10 +48,10 @@ public class Main extends Applet {
 
     @Override
     public void setup() {
-        new Test();
+        //new Test();
 
         surface.setResizable(true);
-        surface.setLocation(2000, 0);
+        surface.setLocation(0, 0);
         surface.setTitle("Trabalho de TCC");
 
         frameRate(FRAME_RATE);
@@ -73,7 +73,7 @@ public class Main extends Applet {
         smooth();
         lights();
 
-        debug(false);
+        debug(true);
 
         center();
         applyMouseMovements();
@@ -94,7 +94,7 @@ public class Main extends Applet {
                 try {
                     myPort.write('D');
                     myPort.write(conveyorBelt.getActiveSensors());
-                    myPort.write("\r\n");
+                    myPort.write("\r");
                 } catch (Exception e) {
                     System.err.println("Erro");
                     e.printStackTrace();
@@ -107,9 +107,10 @@ public class Main extends Applet {
 
     private void startThreadReceiveData() {
         new Thread(() -> new Timer(1000 / baud, actionEvent -> {
-            String buffer = myPort.readString();
-            if (buffer != null) {
+            String buffer = myPort.readStringUntil('\r');
+            if (buffer != null && !Objects.equals(buffer, "")) {
                 buffer = buffer.trim().toUpperCase();
+                println(buffer);
 
                 updateReceivedData(buffer);
                 updateControllers();

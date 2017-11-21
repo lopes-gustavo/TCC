@@ -1,4 +1,4 @@
-package app;
+package app.processing;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -64,6 +64,12 @@ public class Recipient extends Shape {
 
     public int getSizeX() {
         return sizeX;
+    }
+
+    public void restart() {
+        Shape box = getChild("moving_object");
+        box.translate(-getPosX(), 0);
+        posX = (int) minX;
     }
 
     interface Direction {

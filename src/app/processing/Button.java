@@ -1,4 +1,4 @@
-package app;
+package app.processing;
 
 import static processing.core.PConstants.CENTER;
 

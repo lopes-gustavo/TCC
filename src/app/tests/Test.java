@@ -1,6 +1,6 @@
-package tests;
+package app.tests;
 
-import app.Config;
+import app.processing.Config;
 import processing.core.PApplet;
 import processing.serial.Serial;
 

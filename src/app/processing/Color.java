@@ -1,4 +1,4 @@
-package app;
+package app.processing;
 
 public interface Color {
     int BACKGROUND = 0xFF8D8D8D;

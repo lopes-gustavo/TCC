@@ -1,4 +1,4 @@
-package app;
+package app.processing;
 
 import processing.core.PGraphics;
 import processing.core.PShape;

@@ -14,8 +14,6 @@ import java.util.Objects;
 //TODO: Use main.app.Config properly (make it more generic)
 
 public class Main extends Applet {
-    private static final Main instance = new Main();
-
     public static final float FRAME_RATE = 50;
     public static final float SPEED_CORRECTION_FACTOR = 30 / FRAME_RATE;
     private static final int TIMEOUT = 3000;
@@ -53,7 +51,7 @@ public class Main extends Applet {
 
         surface.setResizable(true);
         surface.setLocation(2000, 0);
-        surface.setTitle("Trabalho de TCC");
+        surface.setTitle("Software Principal");
 
         frameRate(FRAME_RATE);
 
@@ -258,7 +256,7 @@ public class Main extends Applet {
                 fill(Color.BLACK);
                 rect(0, height, width, -100);
 
-                showGrid();
+                //showGrid();
                 displayButtons();
                 conveyorBelt.displaySensorsTable();
             });

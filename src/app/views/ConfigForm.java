@@ -8,7 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class ConfigForm {
-    private JFrame frame = new JFrame("TCC");
+    private JFrame frame = new JFrame("Software Principal");
 
     private JPanel mainPanel;
     private JButton restartButton;
@@ -47,6 +47,7 @@ public class ConfigForm {
         frame.setContentPane(new ConfigForm().mainPanel);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setResizable(false);
+        frame.setIconImage(new ImageIcon("assets/icon.png").getImage());
         frame.pack();
         frame.setVisible(true);
     }

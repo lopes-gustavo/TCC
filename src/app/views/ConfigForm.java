@@ -47,7 +47,7 @@ public class ConfigForm {
         frame.setContentPane(new ConfigForm().mainPanel);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setResizable(false);
-        frame.setIconImage(new ImageIcon("assets/icon.png").getImage());
+        frame.setIconImage(new ImageIcon("src/assets/icon.png").getImage());
         frame.pack();
         frame.setVisible(true);
     }

@@ -11,7 +11,7 @@ import java.util.Collections;
 public class Test extends PApplet {
     private static String SERIAL_PORT = "COM11";
     private Serial myPort;
-    private int baud = 100; // Receber dados quantas vezes por segundo
+    private int baud = 30; // Receber dados quantas vezes por segundo
     private int digitalOutput = Config.getDigitalOutput();
     private ArrayList<Boolean> digitalList = new ArrayList<>(Collections.nCopies(digitalOutput, false));
     private int balls = 0;
@@ -28,8 +28,8 @@ public class Test extends PApplet {
             System.err.println("A porta está correta?");
             System.exit(1);
         }
-        //startThreadSendData();
 
+        // startThreadSendData();
         startThreadReceiveData();
     }
 
@@ -45,7 +45,6 @@ public class Test extends PApplet {
             if (buffer != null) {
                 buffer = buffer.trim().toUpperCase();
 
-                countBalls(buffer);
                 reply(buffer);
             }
         }).start()).start();
@@ -67,7 +66,7 @@ public class Test extends PApplet {
 
                 if (balls >= 4) {
                     balls = 0;
-                    answer("D1000A9000");
+                    answer("D1000A1000");
                 }
             }
         }catch (Exception ignored) {}
@@ -81,15 +80,14 @@ public class Test extends PApplet {
                 digitalList.set(i, digital.charAt(i) == '1');
             }
 
-/*
-            if (digitalList.get(0)) {
-                answer("D1001A5000");
+            if (digitalList.get(1)) {
+                countBalls(buffer);
+                answer("D0011A1000");
             }
-*/
 
             if (digitalList.get(1)) {
                 if (!hasStopped) {
-                    answer("D0011A9999");
+                    answer("D0011A1111");
                     hasStopped = true;
                 }
             }

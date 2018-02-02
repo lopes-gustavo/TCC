@@ -76,6 +76,8 @@ public class Test extends PApplet {
         try {
             String digital = buffer.substring(1);
 
+            answer("D0010A0000");
+
             for (int i = 0; i < digitalOutput; i++) {
                 digitalList.set(i, digital.charAt(i) == '1');
             }
@@ -95,6 +97,7 @@ public class Test extends PApplet {
             if (digitalList.get(2)) {
                 answer("D0010A0000");
             }
+
         } catch (Exception ignored) {}
     }
 }
